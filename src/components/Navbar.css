@@ -91,7 +91,9 @@
     top: 80px;
     left: -100%;
     width: 100%;
-    background-color: white;
+    background-color: transparent;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     box-shadow: var(--card-shadow);
     transition: var(--transition);
     padding: 2rem 0;
