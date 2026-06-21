@@ -1,0 +1,62 @@
+.footer {
+  background-color: var(--card-bg);
+  padding: 2rem 0;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.footer-logo span {
+  color: var(--accent-color);
+}
+
+.footer-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.00rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  text-transform: responsive;
+}
+.footer-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.scroll-top-btn {
+  width: 50px;
+  height: 50px;
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.4);
+}
+
+.scroll-top-btn:hover {
+  background-color: var(--accent-hover);
+  transform: translateY(-3px);
+}
+
+@media (max-width: 576px) {
+  .footer-container {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+}
