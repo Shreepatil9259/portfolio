@@ -13,7 +13,8 @@ import {
   Tag,
   Loader2,
   ExternalLink,
-  Sparkles
+  Sparkles,
+  Inbox
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import './Contact.css';
@@ -33,7 +34,7 @@ const Contact = () => {
     message: ''
   });
 
-  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState('idle'); // 'idle' | 'loading' | 'success' | 'activation_needed' | 'error'
   const [statusMessage, setStatusMessage] = useState('');
   const [copiedEmail, setCopiedEmail] = useState(false);
 
@@ -73,48 +74,77 @@ const Contact = () => {
     setStatus('loading');
     setStatusMessage('');
 
-    // Access key from Vite environment variable
     const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY;
-
-    // If key has not been configured yet, inform the user or provide direct mailto
-    if (!accessKey || accessKey === 'your_web3forms_access_key_here') {
-      setStatus('error');
-      setStatusMessage(
-        'Email delivery key is not configured yet. Please configure VITE_WEB3FORMS_ACCESS_KEY or click below to send directly via your email app.'
-      );
-      return;
-    }
+    const hasWeb3Key = Boolean(accessKey && accessKey !== 'your_web3forms_access_key_here');
 
     try {
-      const response = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json'
-        },
-        body: JSON.stringify({
-          access_key: accessKey,
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          subject: formData.subject.trim() || `New inquiry from ${formData.name}`,
-          message: formData.message.trim(),
-          from_name: `${formData.name} (Portfolio Contact)`,
-          replyto: formData.email.trim()
-        })
-      });
+      if (hasWeb3Key) {
+        // Option 1: Web3Forms if configured with an access key
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            access_key: accessKey,
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            subject: formData.subject.trim() || `New inquiry from ${formData.name}`,
+            message: formData.message.trim(),
+            from_name: `${formData.name} (Portfolio Contact)`,
+            replyto: formData.email.trim()
+          })
+        });
 
-      const data = await response.json();
-
-      if (data.success) {
-        setStatus('success');
+        const data = await response.json();
+        if (data.success) {
+          setStatus('success');
+        } else {
+          setStatus('error');
+          setStatusMessage(data.message || 'Failed to send message. Please try again.');
+        }
       } else {
-        setStatus('error');
-        setStatusMessage(data.message || 'Failed to send message. Please try again.');
+        // Option 2: FormSubmit (Zero setup, delivers directly to shreepatil9259@gmail.com)
+        const response = await fetch(`https://formsubmit.co/ajax/${contactEmail}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json'
+          },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            _replyto: formData.email.trim(),
+            _subject: formData.subject.trim() || `New Portfolio Message from ${formData.name}`,
+            message: formData.message.trim(),
+            _captcha: 'false',
+            _template: 'table'
+          })
+        });
+
+        const data = await response.json();
+
+        // Check if FormSubmit sent a one-time email activation link
+        if (data.message && data.message.toLowerCase().includes('activat')) {
+          setStatus('activation_needed');
+          setStatusMessage(
+            'FormSubmit has sent a one-time activation link to shreepatil9259@gmail.com. Please open your Gmail (or Spam folder) and click "Activate Form" once. After activating, all future messages will be delivered directly!'
+          );
+          return;
+        }
+
+        if (data.success === 'true' || data.success === true || response.ok) {
+          setStatus('success');
+        } else {
+          setStatus('error');
+          setStatusMessage(data.message || 'Unable to deliver message right now. Please try again.');
+        }
       }
     } catch (err) {
       console.error('Contact form submission error:', err);
       setStatus('error');
-      setStatusMessage('Network connection error. Please check your internet or reach out directly.');
+      setStatusMessage('Network connection error. Please try again or reach out directly.');
     }
   };
 
@@ -256,6 +286,34 @@ const Contact = () => {
                   <Sparkles size={18} style={{ marginRight: '8px' }} />
                   Send Another Message
                 </button>
+              </div>
+            ) : status === 'activation_needed' ? (
+              <div className="form-success-card activation-card">
+                <div className="success-icon-wrap activation-icon-wrap">
+                  <Inbox size={48} />
+                </div>
+                <h3>Action Required: Activate Form</h3>
+                <p>
+                  FormSubmit has sent a one-time activation link to <strong>{contactEmail}</strong>.
+                </p>
+                <div className="activation-steps">
+                  <p>1. Open your inbox at <strong>{contactEmail}</strong> (or check Spam).</p>
+                  <p>2. Click the <strong>"Activate Form"</strong> button in the email from FormSubmit.</p>
+                  <p>3. Once clicked, future submissions from this form will arrive immediately in your inbox!</p>
+                </div>
+                <div className="activation-actions">
+                  <a
+                    href="https://mail.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-primary"
+                  >
+                    Open Gmail to Activate
+                  </a>
+                  <button type="button" className="btn btn-outline" onClick={handleReset} style={{ marginLeft: '0.75rem' }}>
+                    Back to Form
+                  </button>
+                </div>
               </div>
             ) : (
               <form className="contact-form" onSubmit={handleSubmit} noValidate>
