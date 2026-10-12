@@ -14,8 +14,8 @@ const Footer = () => {
       <div className="container footer-container">
         <div className="footer-content">
           <div className="footer-logo">
-            Shreyas<span></span>
-            <p className="footer-subtitle fade-in visible">Computer Engineering Student passionate about building innovative web solutions and exploring new technologies.</p>
+            Shreyas Patil<span></span>
+            <p className="footer-subtitle fade-in visible">DevOps Engineer</p>
           </div>
           <p className="footer-text">
             &copy; {new Date().getFullYear()} Shreyas Patil. All rights reserved.
